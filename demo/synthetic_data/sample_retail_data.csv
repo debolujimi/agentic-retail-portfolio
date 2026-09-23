@@ -1,0 +1,5 @@
+store_id,product,current_stock,week_1_sales,week_2_sales,week_3_sales,week_4_sales,supplier_lead_time_days,unit_price
+STORE-DEMO-001,Milk 1L,18,22,25,24,26,2,18.99
+STORE-DEMO-001,Bread,12,33,36,35,37,1,17.49
+STORE-DEMO-001,Rice 2kg,40,10,12,11,11,4,49.99
+STORE-DEMO-001,Cooking Oil 2L,9,14,16,15,15,3,64.99
