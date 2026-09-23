@@ -2,6 +2,10 @@
 
 Governed multi-agent AI architecture for integrated retail decision support, human oversight and operational coordination.
 
+[![Portfolio CI](https://github.com/debolujimi/agentic-retail-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/debolujimi/agentic-retail-portfolio/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
+![Data](https://img.shields.io/badge/data-synthetic-success)
+
 ## Overview
 
 This repository presents a portfolio implementation of a governed multi-agent retail decision-support architecture. It demonstrates how specialised AI agents can coordinate across interconnected retail functions while preserving human oversight, traceability, modularity and testability.
