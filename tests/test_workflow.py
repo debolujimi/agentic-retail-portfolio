@@ -1,4 +1,7 @@
-from demo.models import RetailSnapshot
+import pytest
+
+from demo.governance import GovernanceGate
+from demo.models import AgentDecision, RetailSnapshot
 from demo.workflow import RetailWorkflow
 
 
@@ -53,3 +56,57 @@ def test_pricing_is_bounded():
     result = RetailWorkflow().run(make_snapshot(current_stock=100))
     pricing = next(d for d in result.decisions if d.agent == "pricing")
     assert abs(pricing.data["change_pct"]) <= 5.0
+
+
+def test_workflow_is_deterministic_for_same_snapshot():
+    workflow = RetailWorkflow()
+    first = workflow.run(make_snapshot())
+    second = workflow.run(make_snapshot())
+    assert first == second
+
+
+def test_large_procurement_recommendation_requires_review():
+    result = RetailWorkflow().run(
+        make_snapshot(current_stock=1, recent_weekly_sales=[40, 42, 41, 43])
+    )
+    procurement = next(d for d in result.decisions if d.agent == "procurement")
+    assert procurement.data["recommended_order_quantity"] > 50
+    assert result.governance_status == "review_required"
+    assert result.requires_human_review is True
+
+
+def test_governance_blocks_out_of_policy_price_change():
+    decisions = [
+        AgentDecision(
+            agent="pricing",
+            action="raise_price",
+            rationale="Synthetic policy-boundary test.",
+            data={"change_pct": 12.0},
+        )
+    ]
+    status, requires_review = GovernanceGate().evaluate(decisions)
+    assert status == "blocked"
+    assert requires_review is True
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"store_id": ""},
+        {"product": ""},
+        {"current_stock": -1},
+        {"recent_weekly_sales": []},
+        {"recent_weekly_sales": [10, -1, 12]},
+        {"supplier_lead_time_days": -1},
+        {"unit_price": 0},
+    ],
+)
+def test_invalid_snapshot_inputs_fail_closed(overrides):
+    with pytest.raises(ValueError):
+        make_snapshot(**overrides)
+
+
+def test_customer_agent_does_not_send_messages():
+    result = RetailWorkflow().run(make_snapshot(current_stock=100))
+    customer = next(d for d in result.decisions if d.agent == "customer_engagement")
+    assert customer.data["channel"] == "demo_only"
